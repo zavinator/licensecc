@@ -97,6 +97,7 @@ jobs:
         gcovr -r ${{ github.workspace }}
         --exclude '.*/test/.*'
         --exclude '.*/src/library/ini/.*'
+        --exclude '.*/src/library/sntp/.*'
         --exclude '.*/extern/.*'
         --txt --cobertura ${{ steps.strings.outputs.build-output-dir }}/coverage.xml
     - name: Run codacy-coverage-reporter

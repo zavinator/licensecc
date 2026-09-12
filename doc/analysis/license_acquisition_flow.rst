@@ -29,7 +29,18 @@ Components
    * - ``LicenseVerifier::verify_limit``
      - Verifies (signature and limits) one ``FullLicenseInfo``, registers the
        outcome events into the ``EventRegistry`` and fills the ``LicenseInfo``
-       output, returning a ``FUNCTION_RETURN``.
+       output, returning a ``FUNCTION_RETURN``. The default verifiers are
+       ``verify_date`` (``limits/date_verifier.cpp``), ``verify_pc_signature``,
+       ``verify_virtualization`` and ``verify_signature``.
+
+.. note::
+
+   ``verify_date`` is the only verifier that can access the network: when the license declares a
+   date limit and ``NTP_CHECK`` is not ``NTP_CHECK_NO`` it queries an NTP server to check the
+   system clock, and may fail with ``TIME_OUT_OF_SYNC`` instead of ``LICENSE_OK`` /
+   ``PRODUCT_EXPIRED``. See the settings documented in
+   :ref:`Extension points <api/extend:Tweak the date verification>`.
+
    * - ``merge_licenses`` (file-static free function in ``Licensecc.cpp``)
      - Picks the best valid license (no-input, or latest expiry) and fills
        ``LicenseInfo``; decides the final ``LCC_EVENT_TYPE``.

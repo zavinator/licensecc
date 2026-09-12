@@ -1,24 +1,27 @@
 ---
-description: "Use when writing or editing C++ source files (cpp/hpp/h/cc/cxx) in licensecc. Covers RAII, value semantics, const-correctness, C++11 constraints, smart-pointer construction, exception safety across the C API boundary, and common pitfalls like dangling c_str() and temporaries bound to references."
+description: "Use when writing or editing C++ source files (cpp/hpp/h/cc/cxx) in licensecc. Covers RAII, value semantics, const-correctness, C++11 constraints, smart-pointer construction, error handling across the C API boundary (return error codes, don't throw), the backward-compatibility policy (prefer a clean solution over a compatibility shim), and common pitfalls like dangling c_str() and temporaries bound to references."
 name: "C++ Coding Guidelines"
 applyTo: "**/*.{cpp,hpp,h,cc,cxx}"
 ---
 
 # Coding Guidelines
 
-These guidelines are for the `licensecc` library specifically — the sections below
-call out where the codebase is already consistent (follow it) and where it is
-inconsistent (pick the dominant convention for new code; don't add a third style).
+These guidelines are for the `licensecc` library specifically.
+
+## General rule
+
+Keep the implementation simple. This is a goal.
+  - If implementing a new feature spirals down in sea of details and it start to become very complicated for a sea of little issues (backward compatibility, edge cases, pre-esistent logic) stop, ask and evaluate different approaches. 
+  - Don't be afraid to do changes to the current code/functions if this simplifies the future implementation.
+  - Simplify every new implementation. Do not care of backward compatibility.
+
 
 ## Repo Conventions
 
 ### Naming
 
-- Functions and methods: `snake_case` (`verify_signature`, `get_active_strategies`,
-  `generate_pc_id`) — this is the dominant style across the library. A few older
-  files use `camelCase` (`readLicenses`, `mergeLicenses`, `toLicenseInfo`,
-  `getAdapterInfos`); treat these as legacy, don't extend the camelCase style to
-  new code, and prefer `snake_case` when touching them anyway.
+- Functions and methods: `CamelCase` (`readLicenses`, `mergeLicenses`, `toLicenseInfo`, `getAdapterInfos`) 
+- files use `snake_case` ('license_verifier.hpp')
 
 ### Comments
 
@@ -30,8 +33,7 @@ inconsistent (pick the dominant convention for new code; don't add a third style
 ### Header guards
 
 Use `#ifndef FOO_H_` / `#define FOO_H_` / `#endif`, matching the convention used in
-the large majority of headers in this repo. A couple of files use `#pragma once`;
-don't add more — pick the `#ifndef` guard style for new headers.
+the large majority of headers in this repo. Do not use `#pragma once` pick the `#ifndef` guard style for new headers.
 
 ### `using namespace`
 
@@ -40,30 +42,25 @@ codebase and that's fine — but it must **never** appear in a header (`.h`/`.hp
 since headers are included into consumers' translation units and would leak the
 namespace into their code.
 
-### Exceptions across the C API boundary
+### Error handling across the C API boundary
 
-The library throws `std::logic_error` / `std::invalid_argument` / `std::runtime_error`
-internally (hardware identification, file I/O). That's fine for
-internal C++ code, but every function exported through the C API
-(`include/licensecc/licensecc.h`, i.e. `identify_pc`, `acquire_license`,
-`confirm_license`, `release_license`) is a hard boundary: **no exception may cross
-it**, since callers may be linking from C, a different runtime, or across a DLL
-boundary, where an escaping exception is undefined behavior, not a catchable error.
-- `Licensecc::identify_pc` wraps its work in `try { ... } catch (const std::exception&)`
-  and logs/degrades gracefully.
-- `Licensecc::acquire_license` has **no** top-level `try/catch` by design. Every
-  logical error must instead be handled at the leaf functions it reaches: return a
-  `FUNCTION_RETURN` / `LCC_EVENT_TYPE` error code, or be `noexcept` and catch your
-  own exceptions (the limit verifiers in `src/library/limits/limit_verifiers.cpp`
-  are the pattern to copy). Never add a top-level `try/catch` to `acquire_license`.
-  Known leaves already refactored to error codes (do not reintroduce throws):
-  `base/file_utils.cpp` `get_file_contents`, `base/string_utils.cpp` `identify_format`.
-- `std::bad_alloc` (OOM) is intentionally left uncaught: an allocation failure
-  propagating through a `noexcept` entry point calls `std::terminate()`, which is
-  acceptable.
-- Do not suggest throwing exceptions in library code. Prefer returning error codes
-  and let the caller decide how to handle them. If you find code that throws, refactor
-  it to return an error code instead (no separate PR).
+Failure is a return value in this library, not an exception: leaf functions return
+`FUNCTION_RETURN`, the C API returns `LCC_EVENT_TYPE`, and the caller decides what to
+do with it. The C API (`include/licensecc/licensecc.h`: `identify_pc`,
+`acquire_license`, `confirm_license`, `release_license`) is why this matters: a caller
+may be plain C, a different runtime, or across a DLL boundary, where an escaping
+exception is undefined behavior, not a catchable error.
+
+For new and refactored code that means:
+- Report failure by returning an error code; don't throw. If you touch a leaf that
+  throws, convert it in the same change (`base/file_utils.cpp` `get_file_contents`
+  and `base/string_utils.cpp` `identify_format` are already converted — keep them
+  that way).
+- `license.cpp` holds the one and only `catch`: `acquire_license` converts anything
+  that still escapes into an error code before it reaches the caller. Don't add
+  another one on the path, and don't reach for `noexcept` to silence a throw — it
+  documents intent but doesn't make a failing function safe. `Licensecc::identify_pc`
+  catches internally because `generate_user_pc_signature` reports failure by throwing.
 
 ### Smart pointer construction
 
@@ -102,6 +99,18 @@ strncpy(dst, src, sizeof(dst) - 1);
 mstrlcpy(dst, src, sizeof(dst));
 ```
 
+### Backward compatibility
+
+Prefer the clean solution. Do **not** add code that exists only to keep an old configuration, an old header, or an old behavior compiling — no `#ifndef`/`#define` fallbacks that silently supply a
+default for a setting the project should declare, no deprecated overloads, no `#if` branches whose
+only purpose is "a project generated three years ago didn't define this".
+
+Use the setting directly and let the compiler produce the error. Then document the break in
+`CHANGELOG.md` under a `## Breaking Changes:` section for the release: say what has to be redone
+(e.g. regenerate `licensecc_properties.h`, re-issue licenses) and how.
+
+Exception: the *public* API (`include/licensecc/`, the C and C++ entry points `identify_pc`, `acquire_license`, `confirm_license`, `release_license`) is what third-party applications link against — keep it stable, don't change signatures or remove enum values without an explicit request from the user.
+
 ## General C++ Guidance
 
 ### 1. Resource Management
@@ -133,15 +142,19 @@ Unlike Java's garbage collection, C++ uses RAII for automatic resource managemen
 - Be cautious with arrays and pointer arithmetic
 - Use `std::vector` instead of raw arrays, `std::string` instead of C-strings
 
-### 5. Exception Safety
+### 5. Failure Handling
 
-- Design exception-safe code using RAII
-- Prefer stack unwinding over manual error handling
-- Use RAII for automatic cleanup in exception paths
+- Report failure with an error code and let the caller decide, as described in
+  "Error handling across the C API boundary" — don't throw.
+- Use RAII so resources are released on every early-return path; there is no stack
+  unwinding to fall back on.
+- Keep cleanup explicit: one return path per outcome, resources freed before returning.
 
 ### 6. Method visibility
 
-- Prefer static methods inside .cpp files over methods in 'private:' sections. Keep it as preference. Evaluate case by case depending on how much the method needs to access class fields.
+- Prefer static methods inside .cpp files over methods in 'private:' sections.  Evaluate case by case depending on how much the method needs to access class fields.
+- reduce to the minimum the surface of a module .cpp exposed in .h and .hpp files. 
+- if some method is used only in tests add the declaration in the test file only.
 
 ## Avoid C++ Common Errors
 

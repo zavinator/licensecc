@@ -7,6 +7,7 @@ set(LICENSECC_SOURCES
     license.cpp
     Licensecc.cpp
     LicenseParser.cpp
+    limits/date_verifier.cpp
     limits/limit_verifiers.cpp
     limits/license_verifier.cpp
     ini/ConvertUTF.cpp

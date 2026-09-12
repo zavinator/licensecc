@@ -51,7 +51,8 @@ const unordered_map<int, string> stringByEventType = {
 	{PRODUCT_NOT_LICENSED, "this product was not licensed "},
 	{PRODUCT_EXPIRED, "license expired "},
 	{LICENSE_CORRUPTED, "license signature didn't match with current license "},
-	{IDENTIFIERS_MISMATCH, "Calculated identifier and the one provided in license didn't match"}};
+	{IDENTIFIERS_MISMATCH, "Calculated identifier and the one provided in license didn't match"},
+	{TIME_OUT_OF_SYNC, "system time is not in sync with the NTP server (or the NTP server is not reachable)"}};
 
 static LCC_EVENT_TYPE verifyLicense(const string& fname) {
 	LicenseInfo licenseInfo;

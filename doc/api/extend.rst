@@ -2,7 +2,7 @@
 Extension points
 #######################################
 
-Version 2.1 of the library comes with predefined customization points.
+Version 2.5 of the library comes with predefined customization points.
 
  * For "no code customization"   : change default behaviors, enable/disable features customize pre-defined behaviors 
  * Implement new features        : if you need a feature that is not supported licensecc provides 4 extension points.
@@ -78,6 +78,26 @@ the underlying strategies in this section of `licensecc_properties.h`:
    #define LCC_CLOUD_STRATEGIES {STRATEGY_CPU_MODEL, STRATEGY_NONE}
    #define LCC_LXC_STRATEGIES {STRATEGY_ETHERNET, STRATEGY_SYSTEM_ID, STRATEGY_CPU_MODEL, STRATEGY_NONE}
    #define LCC_DOCKER_STRATEGIES {STRATEGY_CPU_MODEL, STRATEGY_NONE}
+
+Tweak the date verification
+=============================================
+
+Licenses with an expiry date or a start date can be verified against the time reported by an NTP
+server, to detect a system clock that has been set in the past to keep using an expired license:
+
+.. code-block:: c
+
+   #define NTP_SERVER_NAME "pool.ntp.org"
+   #define NTP_CHECK NTP_CHECK_OPTIONAL
+   #define MAX_ALLOWED_OFFSET_SEC 3600
+
+``NTP_CHECK`` is ``NTP_CHECK_NO`` (verify the dates against the system clock only, the behavior of
+the library prior to this feature), ``NTP_CHECK_OPTIONAL`` (default, if the server can't be reached
+fall back to the system clock) or ``NTP_CHECK_REQUIRED`` (reject the license if the server can't be
+reached). An out of sync clock is reported with the event ``TIME_OUT_OF_SYNC``.
+
+Each setting is commented in ``licensecc_properties.h``. A full description of this limit, and of
+how the dates are verified, is in the :ref:`Execution limits <analysis/features:Date>` section.
 
 **************************************************************
 Finding the licenses in new places: custom license locators 

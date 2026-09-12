@@ -38,7 +38,15 @@ typedef enum {
 	LICENSE_CORRUPTED = 8,	// License signature didn't match with current license
 	IDENTIFIERS_MISMATCH = 9,  // Calculated identifier and the one provided in license didn't match
 	IDENTIFIER_NOT_AVAILABLE = 10,	// For some reason the method is unable to calculate the requested identifier
+	/**
+	 * The local system time can't be trusted. Either the NTP server wasn't reachable and
+	 * NTP_CHECK is set to NTP_CHECK_REQUIRED, or the difference between the system time and
+	 * the NTP server time is greater than MAX_ALLOWED_OFFSET_SEC.
+	 * See licensecc_properties.h for both settings.
+	 */
+	TIME_OUT_OF_SYNC = 11,
 
+	LCC_INTERNAL_ERROR = 42,  // LICENSECC encountered an internal unrecoverable error. Enable logs to investigate.
 	////////////////// LCC_EVENT_TYPE<100 errors , LCC_EVENT_TYPE>100 OK
 	LICENSE_OK = 100,  // OK
 	LICENSE_SPECIFIED = 101,  // license location was specified

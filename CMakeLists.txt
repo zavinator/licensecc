@@ -137,6 +137,12 @@ else(UNIX) #windows and linux crosscompiling for windows target
 		include_directories(${OPENSSL_INCLUDE_DIR})
 		MESSAGE(STATUS "Openssl (licensecc)       : ${OPENSSL_VERSION}")
 		MESSAGE(STATUS "Openssl libraries         : ${OPENSSL_CRYPTO_LIBRARY}")
+		# the SNTP client (src/library/sntp/sntp.h) uses udp sockets, winsock isn't pulled in by openssl
+		if(MINGW)
+			list(APPEND EXTERNAL_LIBS "-lws2_32")
+		else(MINGW)
+			list(APPEND EXTERNAL_LIBS "ws2_32")
+		endif(MINGW)
 	ELSE(OpenSSL_FOUND) 
 		MESSAGE(STATUS "Openssl (licensecc)       : not found or not enabled - using windows cryptography.")
 		list(APPEND EXTERNAL_LIBS "bcrypt" "crypt32" "ws2_32" "iphlpapi")

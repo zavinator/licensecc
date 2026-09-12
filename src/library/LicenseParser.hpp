@@ -44,7 +44,7 @@ private:
 public:
 	LicenseParser(EventRegistry& eventRegistry);
 	std::vector<FullLicenseInfo> parseLicense(const std::string& product,
-											  const locate::RawLicenseData& rawLicense) const noexcept;
+											  const locate::RawLicenseData& rawLicense) const;
 	virtual ~LicenseParser();
 };
 }  // namespace license

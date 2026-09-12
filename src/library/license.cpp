@@ -9,6 +9,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <cstring>
+#include <exception>
 #include <iostream>
 #include <cstdlib>
 
@@ -36,5 +37,12 @@ bool identify_pc(LCC_API_HW_IDENTIFICATION_STRATEGY pc_id_method, char identifie
 LCC_EVENT_TYPE acquire_license(const CallerInformations* callerInformation, const LicenseLocation* licenseLocation,
 							   LicenseInfo* license_out) {
 	static license::Licensecc facade;
-	return facade.acquire_license(callerInformation, licenseLocation, license_out);
+	// the only exception handler of the library: an exception crossing the C ABI boundary to a C caller would be
+	// undefined behavior, so it is converted here into the matching error code.
+	try {
+		return facade.acquire_license(callerInformation, licenseLocation, license_out);
+	} catch (const std::exception& ex) {
+		LOG_ERROR("Unexpected error acquiring the license: %s", ex.what());
+		return LCC_EVENT_TYPE::LCC_INTERNAL_ERROR;
+	}
 }

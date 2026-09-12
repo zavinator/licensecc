@@ -57,7 +57,7 @@ FUNCTION_RETURN getLocatorStrategies(std::vector<std::unique_ptr<locate::Locator
 	return result;
 }
 
-static LCC_EVENT_TYPE no_license_found(EventRegistry& er, LicenseInfo* license_out) noexcept {
+static LCC_EVENT_TYPE no_license_found(EventRegistry& er, LicenseInfo* license_out) {
 	if (license_out != nullptr) {
 		license_out->proprietary_data[0] = '\0';
 		license_out->linked_to_pc = false;
@@ -70,10 +70,10 @@ static LCC_EVENT_TYPE no_license_found(EventRegistry& er, LicenseInfo* license_o
 }
 
 static LCC_EVENT_TYPE merge_licenses(const std::vector<LicenseInfoEx>& licenses, EventRegistry& er,
-									 LicenseInfo* license_out) noexcept;
+									 LicenseInfo* license_out);
 
 LCC_EVENT_TYPE Licensecc::acquire_license(const CallerInformations* callerInformation,
-										  const LicenseLocation* licenseLocation, LicenseInfo* license_out) noexcept {
+										  const LicenseLocation* licenseLocation, LicenseInfo* license_out) {
 	string project;
 	size_t str_size;
 	if (callerInformation != nullptr &&
@@ -140,7 +140,7 @@ bool Licensecc::identify_pc(LCC_API_HW_IDENTIFICATION_STRATEGY pc_id_method,
 }
 
 static LCC_EVENT_TYPE merge_licenses(const std::vector<LicenseInfoEx>& licenses, EventRegistry& er,
-									 LicenseInfo* license_out) noexcept {
+									 LicenseInfo* license_out) {
 	if (licenses.empty()) {
 		return no_license_found(er, license_out);
 	}

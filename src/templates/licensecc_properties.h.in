@@ -19,16 +19,20 @@
 /**
  * This file contains all the properties that are customizable on on a per-project basis eg:
  * 1) api parameter sizes
- * 2)
  *
  * It is safe to place the values that your project need to customize here, since each project get its own copy of this
  * file.
  */
 
 #define LCC_PROJECT_NAME "@LCC_PROJECT_NAME@"
+#define LCC_PROJECT_INT_VERSION \
+	(@CMAKE_PROJECT_VERSION_MAJOR @ * 10000 + @CMAKE_PROJECT_VERSION_MINOR @ * 100 + @CMAKE_PROJECT_VERSION_PATCH @)
+#define LCC_PROJECT_VERSION "@CMAKE_PROJECT_VERSION@"
 
 // License retrieval configuration
+#ifndef FIND_LICENSE_NEAR_MODULE
 #define FIND_LICENSE_NEAR_MODULE true
+#endif
 #define FIND_LICENSE_WITH_ENV_VAR false
 
 /**
@@ -162,7 +166,59 @@ enum LCC_API_HW_IDENTIFICATION_STRATEGY {
  * If == 0 do not add default limits to the verifier.
  *
  */
+#ifndef ADD_DEFAULT_LIMITS
 #define ADD_DEFAULT_LIMITS 1
+#endif
+/**
+ * Date verification against an NTP server.
+ *
+ * Licenses with an expiry date (`valid-to`) or a start date (`valid-from`) can be verified against
+ * the time reported by an NTP server, to detect a system clock that has been set in the past to
+ * keep using an expired license. Licenses without date limits never access the network.
+ *
+ * N.B. the simple network time protocol is not authenticated: it protects against a casual clock
+ * manipulation, not against an attacker able to intercept or spoof the udp traffic.
+ */
+/**
+ * Host name of the NTP server used to verify the license dates. Consider using a server that is
+ * reachable by your customers, or an internal one if the licensed software runs in a closed
+ * network. Any host serving the SNTP protocol on port 123 is fine.
+ */
+#ifndef NTP_SERVER_NAME
+#define NTP_SERVER_NAME "pool.ntp.org"
+#endif
+/**
+ * How much the network time protocol is trusted when verifying the license dates. The three
+ * values below are mutually exclusive, set NTP_CHECK to one of them:
+ *
+ * NTP_CHECK_NO       the NTP server is never queried and no network access is performed, the
+ *                    dates are verified against the system clock only (library behavior prior to
+ *                    the introduction of this check). Set it on machines without internet access.
+ * NTP_CHECK_OPTIONAL if the NTP server answers, the dates are verified against the server time,
+ *                    and the license is rejected with the event TIME_OUT_OF_SYNC when the system
+ *                    clock is off by more than MAX_ALLOWED_OFFSET_SEC. If the server can't be
+ *                    reached the system clock is used as a fallback.
+ * NTP_CHECK_REQUIRED as above, but the server must answer: if it can't be reached the license is
+ *                    rejected with the event TIME_OUT_OF_SYNC. Safer, but the software will not
+ *                    start at all in an offline environment.
+ */
+#define NTP_CHECK_NO 0
+#define NTP_CHECK_OPTIONAL 1
+#define NTP_CHECK_REQUIRED 2
+#ifndef NTP_CHECK
+#define NTP_CHECK NTP_CHECK_OPTIONAL
+#endif
+/**
+ * Maximum allowed difference, in seconds, between the system clock and the NTP server time. A
+ * bigger difference is considered clock tampering and the license is rejected with the event
+ * TIME_OUT_OF_SYNC. It should be larger than the clock drift you normally observe on your
+ * customers' machines, especially if they run virtual machines that are suspended for long
+ * periods. It is compared with the absolute value of the difference, so a clock set in the
+ * future is rejected too.
+ */
+#ifndef MAX_ALLOWED_OFFSET_SEC
+#define MAX_ALLOWED_OFFSET_SEC 3600
+#endif
 
 #endif
 /**

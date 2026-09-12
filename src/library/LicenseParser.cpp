@@ -38,7 +38,7 @@ using namespace std;
 LicenseParser::LicenseParser(EventRegistry& eventRegistry) : eventRegistry(eventRegistry) {}
 
 std::vector<FullLicenseInfo> LicenseParser::parseLicense(const std::string& product,
-														 const locate::RawLicenseData& rawLicense) const noexcept {
+														 const locate::RawLicenseData& rawLicense) const {
 	std::vector<FullLicenseInfo> licenseInfoOut;
 	const std::string& license = rawLicense.data;
 	const std::string& locationId = rawLicense.location_id;

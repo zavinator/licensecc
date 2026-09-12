@@ -107,11 +107,19 @@ Date
 =========
 This is the most common limit set on a license, allow the software to expire after the defined date.
 
-.. note::
+A license can also declare a start date (``valid-from``). The dates can be verified against the time
+reported by an NTP server, so a customer can't roll the system clock back to keep using an expired
+license (:ref:`configure it here <api/extend:Tweak the date verification>`).
 
-   This feature will take the date of the host pc. It doesn't connect to Internet to check if the date is right.
-   It's a known limitation, making it 'right' requires an external server or that an NTP server is in reach, 
-   and it's out of scope for now.
+.. warning::
+
+   `SNTP <https://datatracker.ietf.org/doc/html/rfc4330>`_ is not an authenticated protocol: the
+   answer of the NTP server can be spoofed by anybody able to intercept the udp traffic of the
+   machine. This feature protects against a casual clock manipulation — the most common way a
+   time limited license is circumvented — it doesn't protect against a determined attacker.
+
+   Querying the server is a blocking network operation: when the NTP server doesn't answer the
+   license verification waits for the socket timeout before giving up.
 
 Disk label/Disk id
 ==============================

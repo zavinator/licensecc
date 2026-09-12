@@ -65,7 +65,7 @@ public:
 	 * @return LCC_EVENT_TYPE indicating success or failure
 	 */
 	LCC_EVENT_TYPE acquire_license(const CallerInformations* callerInformation, const LicenseLocation* licenseLocation,
-								   LicenseInfo* license_out) noexcept;
+								   LicenseInfo* license_out);
 
 	/**
 	 * @brief Calculate the hardware identifier for the current PC
