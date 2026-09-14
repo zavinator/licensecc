@@ -59,7 +59,7 @@ This makes the following targets available to your build:
 - `licensecc::licensecc` -- the licensing library. *Add it to your application*
 - `lccgen` -- the license generator executable (used internally by the build. Once it is built install it to a folder in your PATH to issue licenses)
 
-See [Locate and link the library](integration.rst#step-1-locate-and-link-the-library) for more details.
+See {ref}`Locate and link the library <step-1-locate-and-link-the-library-cmake>` for more details.
 
 ## Step 2: Launch cmake build
 
@@ -130,12 +130,12 @@ projects/
 
 ### Step 5: Compile the Library
 
-The library is compiled with your public key embedded. The static library
-`liblicensecc_static.a` (or `licensecc_static.lib` on Windows) is produced.
+The library is compiled with your public key embedded, producing the static library `liblicensecc.a`
+(`licensecc.lib` on Windows).
 
 ```
 +-------------------+       +---------------------------+
-|  projects/MyApp/  |       |  liblicensecc_static.a    |
+|  projects/MyApp/  |       |  liblicensecc.a           |
 |                   |       |                           |
 |  + public_key.h   +------>+  (public_key.h embedded)  |
 |  + properties     |       |  (verification logic)     |
@@ -156,10 +156,13 @@ install/
 │           ├── licensecc_properties.h
 │           └── public_key.h
 └── lib/
-    └── MyApp/
-        ├── liblicensecc_static.a
-        └── cmake/
-            └── licenseccConfig.cmake
+    ├── cmake/
+    │   └── licensecc/
+    │       ├── licensecc-config.cmake
+    │       └── licensecc-config-version.cmake
+    └── licensecc/
+        └── MyApp/
+            └── liblicensecc.a
 ```
 
 ## Step 6: Integrate into Your Application
@@ -199,7 +202,7 @@ license::Licensecc licensecc;
 LCC_EVENT_TYPE result = licensecc.acquire_license(nullptr, nullptr, &info);
 ```
 
-See [Step 6 — Call Licensecc from your code](integration.rst#step-6-call-licensecc-from-your-code) for a detailed integration example with error handling.
+See {ref}`Call licensecc from your code <call-licensecc-from-your-code>` for a detailed integration example with error handling.
 
 ```
 +-------------------+       +-------------------+
@@ -214,7 +217,7 @@ See [Step 6 — Call Licensecc from your code](integration.rst#step-6-call-licen
 
 ## Step 7: Issue Licenses
 
-License generation is described in detail in [License Generation](issue-licenses.md). 
+License generation is described in detail in [License Generation](issue-licenses.md).
 Below a quick summary of what you can do.
 
 Use `lccgen` to sign and issue license files. Navigate to the project directory:
@@ -223,10 +226,10 @@ Use `lccgen` to sign and issue license files. Navigate to the project directory:
 cd projects/MyApp
 ```
 
-### Time-limited license (30-day demo)
+### Time-limited license (trial)
 
 ```console
-lccgen license issue --expiry-date 30 -o licenses/my_app_demo.lic
+lccgen license issue --valid-to 2026-12-31 -o licenses/my_app_demo.lic
 ```
 
 ### Hardware-locked license
@@ -236,7 +239,7 @@ your app calling `identify_pc()`), then:
 
 ```console
 lccgen license issue \
-    --client-signature XXXX-XXXX-XXXX-XXXX \
+    --client-signature XXXX-XXXX-XXXX \
     -o licenses/my_app_hw.lic
 ```
 

@@ -1,18 +1,24 @@
 # Developer's environment setup
-This guide is just an help in case you haven't decided your development environment or your development environment match ours. 
-We don't have any specific dependency on development tools, you can choose the one you prefer. Though if you want to contribute
-you're required to  format the code using `clang-format` before you submit the pull request.
+This guide is just help in case you haven't decided your development environment or your development environment doesn't match ours.
+We don't have any specific dependency on development tools, you can choose the one you prefer. However, if you want to contribute
+you're required to format the code using `clang-format` before you submit the pull request (see `CONTRIBUTING.md`).
 
 ## Linux setup
 
-First of all download the source code and compile it from command line as described in [build the library](Build-the-library)
-Download prerequisites:
+First download the source code and compile it from the command line as described in [build the library](Build-the-library).
 
-```
-sudo curl -L "https://github.com/google/styleguide/blob/gh-pages/cpplint/cpplint.py" -o /usr/bin/cpplint.py
-sudo chmod a+x /usr/local/bin/cpplint.py
+```console
 sudo apt-get install clang-format ninja-build
 ```
 
+`cpplint` is optional (it is no longer used in CI):
+
+```console
+sudo curl -L "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py" -o /usr/local/bin/cpplint.py
+sudo chmod a+x /usr/local/bin/cpplint.py
+```
+
 ## Windows setup
-(To be done ...)
+
+Formatting works the same way as on Linux: the repository ships a `.clang-format` file that is picked up by
+Visual Studio and the VS Code C/C++ extension. No additional setup is required.

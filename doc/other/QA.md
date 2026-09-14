@@ -22,7 +22,7 @@ Tests are carried out automatically every commit. You can see the current build 
 If you can't get it compiling: 
 
 * be sure to follow the compilation instructions for [Windows](../development/Build-the-library-windows) or [Linux](../development/Build-the-library).
-* post a question on the [user forum](https://groups.google.com/forum/#!forum/licensecc)
+* post a question on the [user forum](https://github.com/open-license-manager/licensecc/discussions)
 
 ### Help! it used to compile but now it gives me error.
 Updating `licensecc` may pose some issue, since it's still in alpha stage and we may take non-backward compatible changes.
@@ -33,23 +33,17 @@ you need to merge the newly generated folder with the one you saved.
 
 ## Project status
 
-### Project general context (is the project still maintained?)
-This project started as a week-end project in 2014, donated and almost forgotten. This doesn't necessarily meant bad. It was "functional". Thanks to the effort of some people that are using it, and to the help of many of you it has been kept up to date (2020). Now it has got a _refresh_ due to some project having interest in it and
-this year has seen a lot of new features mostly linked to virtualization detection and new environment support.
+For the current maintenance status, what to expect, and how you can help, see the
+[Maintenance Status](maintenance) page.
 
 ### Is it production ready?
-Let's be honest it is still in a very ![experimental](http://badges.github.io/stability-badges/dist/experimental.svg) 
-stage. This means: it's usable with some effort. Some companies are actively using it in production to issue demo licenses and few production licenses. 
-If you plan to use it in a scenario where you need to issue hundreds of licenses plan some maintaining effort, 
-or better use a more mature/commercial licensing software.
+This project started as a week-end project in 2014, donated and almost forgotten, then kept alive
+and refreshed thanks to its users. It is still experimental in spirit: it's usable with some effort,
+and some companies are actively using it in production to issue demo licenses and a few production
+licenses. If you plan to use it in a scenario where you need to issue hundreds of licenses plan some
+maintaining effort, or better use a more mature/commercial licensing software.
 
-### Challenges.
-
-The most challenging aspect is keep the project alive (forum, bugs) when it's a single developer, doing completely different stuff during the week. 
-
-Another challenge (see the "2026 Refresh") is the combination of environment/libraries are working with. We've set up automated tests on Travis CI but they quickly became obsolete. Every github action takes forever to be developed. 
- 
 ### Licensecc and "the community"
 `Licensecc` has a controversal relationship with "the community", especially StackExchange/StackOverflow. 
-I've got technical questions canceled a couple of times and some other got hasty comments. I've found that out there, there are a lot of people that think that all the software should be licensed as [AGPL](https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License). 
+I've got technical questions canceled a couple of times, some other got hasty comments, some other were hijacked like: "you can't do that!". I've found that out there, there are a lot of people that think that all the software should be licensed as [AGPL](https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License). 
 StackOverflow and its fellow sites turned out to be not such a collaborative place to talk about software protection. If you post there remember to choose your words carefully. :speak_no_evil:

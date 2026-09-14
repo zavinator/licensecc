@@ -12,9 +12,10 @@ will issue a license for him (for details see: :ref:`issue licenses <usage/issue
 
 .. NOTE::
 
-  Licensecc will guess the infrastructure type where the user is trying to launch the software (eg. a Virtual Machine), 
-  embed the information into the hardware identifier and report it to the software publisher before he is issuing the license.
-  **Planned 2.5.0(?)**
+    When the library is integrated into the licensed software it can detect the infrastructure
+    type where the user is trying to launch it (eg. a Virtual Machine), embed the information
+    into the hardware identifier and report it to the software publisher before he issues the
+    license.
 
 Hardware identifier encoding
 ****************************
@@ -54,9 +55,9 @@ identifier. The implementation enumerates network adapters via the operating sys
 them to prefer physical and connected adapters over virtual/VPN/disconnected ones, and picks the first non-zero MAC
 address it finds.
 
-- **Bare to metal**: Stable — the MAC address of a physical NIC does not change. Survives across reinstallation of the SO.
-- **Virtual machine**: Works, if the machine is stable, but does not prevent the machine from being cloned with the same mac address. If you are using this inside a CI/CD and the VM is taken from a pool re-configured each time most probably won't work. 
-- **Container (Docker/LXC)**: Usually doesn't work, each container does not have a stable mac address.
+- **Bare to metal**: ✅ Stable — the MAC address of a physical NIC does not change. Survives across reinstallation of the SO.
+- **Virtual machine**: ✅ Works, if the machine is stable, but does not prevent the machine from being cloned with the same mac address. If you are using this inside a CI/CD and the VM is taken from a pool re-configured each time most probably won't work. 
+- **Container (Docker/LXC)**: ❌ Usually doesn't work, each container does not have a stable mac address.
 
 .. _IP_ADDRESS:
 
@@ -133,9 +134,9 @@ the identifier generation will follow these steps:
     * If it detects it's running in a Virtual Machine it will try the strategies in :c:macro:`LCC_VM_STRATEGIES`, it will try them one by one until the first one succeeds.
 
 if you're interested in implementing your own hardware identification strategy you can have a look to the library
- :ref:`extension points <api/extend:Tweak hardware signature generator>`.
+:ref:`extension points <api/extend:Tweak default hardware signature generator>`.
 
-.. TIP:
+.. TIP::
 
     If `licensecc` is generating a bad hardware identifier (eg. 'AAAA-AAAA-AAAA') software licensor can ask the user 
     to set the environment variable ``IDENTIFICATION_STRATEGY`` and try again. Or he can send the user the `lccinspector`
@@ -157,15 +158,14 @@ if you're interested in implementing your own hardware identification strategy y
 .. tip::
 
     Per-project customization of the strategy priorities requires editing
-    ``licensecc_properties.h`` and recompiling. A more flexible (dependency injection)
-    based approach is planned for **v2.5.0**.
+    ``licensecc_properties.h`` and recompiling.
 
 *****************
 Summary
 *****************
 
  - Execution in a physical hardware: Use the (physical) disk SN. This survives a reinstallation of the pc, as a second choice use installation ID.
- - Execution in a virtual machine: Use the mac address. This provide a tiny protection on cloning, as a second choice use the installation ID. If the machine is ephemeral (eg. CI/CD) there is not much you can do to limit. **change when cpuid strategy available**
+ - Execution in a virtual machine: Use the mac address. This provide a tiny protection on cloning, as a second choice use the installation ID. If the machine is ephemeral (eg. CI/CD) there is not much you can do to limit.
  - Execution in a docker: Use the installation ID strategy. This prevents the executable to be taken out of the docker and used elsewhere.
 
 This is what `STRATEGY_DEFAULT` does for you, but you may want to customize it, as described above.

@@ -56,28 +56,9 @@ First of all be sure to read about the standard behavior of :c:func:`identify_pc
    hardware_identifiers
 
 Then you can change the way the default strategy works in `licensecc` by changing 
-the underlying strategies in this section of `licensecc_properties.h`:
-
-.. code-block:: c
-
-   /*
-    * The following group of settings change the behavior of the underlying strategy selection
-    * when LCC_API_HW_IDENTIFICATION_STRATEGY::STRATEGY_DEFAULT is choosen.
-    *--------
-    * List the strategies used when no virtual envrionment is detected
-    */
-   #define LCC_BARE_TO_METAL_STRATEGIES {STRATEGY_DISK, STRATEGY_SYSTEM_ID, STRATEGY_CPU_MODEL, STRATEGY_NONE}
-   /**
-    * List the strategies used when the software is executing in a virtual machine
-    */
-   #define LCC_VM_STRATEGIES {STRATEGY_ETHERNET, STRATEGY_SYSTEM_ID, STRATEGY_NONE}
-   /**
-    * List the strategies used when it's detected a VM executed execution in the cloud.
-    * CPU_MODEL is not very restrictive. Need to debug with Inspector.
-    */
-   #define LCC_CLOUD_STRATEGIES {STRATEGY_CPU_MODEL, STRATEGY_NONE}
-   #define LCC_LXC_STRATEGIES {STRATEGY_ETHERNET, STRATEGY_SYSTEM_ID, STRATEGY_CPU_MODEL, STRATEGY_NONE}
-   #define LCC_DOCKER_STRATEGIES {STRATEGY_CPU_MODEL, STRATEGY_NONE}
+the underlying strategies in this section of `licensecc_properties.h`, as documented
+in the :doc:`hardware identifiers reference <hardware_identifiers>` (the strategy lists and their
+default values live there, keeping a single source of truth).
 
 Tweak the date verification
 =============================================

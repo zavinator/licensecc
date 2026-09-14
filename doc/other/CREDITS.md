@@ -20,4 +20,11 @@ INI parsing library (used to parse the licenses)
 
 MIT license
 Copyright (c) 2006-2012, Brodie Thiesfield
+
+## CPU physical/logical core detection
+`doc/snippets/hardware.cpp` is Agner Fog's `physical_processors.cpp` (CPUID-based physical/logical
+core detection, Intel/AMD/VIA), kept as reference material for a planned execution limit.
+
+Apache License 2.0
+Copyright (c) 2019 Agner Fog
 	

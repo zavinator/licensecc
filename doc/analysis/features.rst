@@ -27,7 +27,7 @@ Floating/network licenses               Not yet planned
 ======================================  ========================
 
 To better understand the roadmap and the status of the project you can 
-have a look at the `release notes<https://github.com/open-license-manager/licensecc/releases/>` on the github repository.
+have a look at the `release notes <https://github.com/open-license-manager/licensecc/releases/>`_ on the github repository.
 
 Issue a "demo" license with only expiry date.
 ==============================================
@@ -36,7 +36,7 @@ See :ref:`execution limits <Execution limits>` section.
 
 Licenses linked to "physical" hardware id
 ===========================================
-Link the software to a physical hardware (a pc). In this scenario the software editor wants his software to be executed on a specific piece of hardware. We suppose the operating system is installed "bare to metal" and we're able to calculate an identifier of that hardware. This isn't always true for virtualized environments for which alternative strategies must be planned [eg. floating licenses (not yet implemented)]. See the section on [hardware identifiers](../usage/Hardware-identifiers) for a detailed discussion of the use cases.
+Link the software to a physical hardware (a pc). In this scenario the software editor wants his software to be executed on a specific piece of hardware. We suppose the operating system is installed "bare to metal" and we're able to calculate an identifier of that hardware. This isn't always true for virtualized environments for which alternative strategies must be planned [eg. floating licenses (not yet implemented)]. See the :ref:`hardware identifiers <usage/Hardware-identifiers:Hardware Identifiers>` section for a detailed discussion of the use cases.
 
 Depending on the situation there are are different kinds of hardware id that can be used. See :ref:`execution limits <Execution limits>` section.
 
@@ -78,7 +78,7 @@ This can be done in multiple ways:
 * with a central server on internet.
 Status of this implementation is tracked in `issue #4 <https://github.com/open-license-manager/licensecc/issues/4>`_
 
-.. _Execution Limits:
+.. _Execution limits:
 
 Implemented/Planned Execution limits
 *************************************

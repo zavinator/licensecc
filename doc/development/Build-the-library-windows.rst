@@ -77,21 +77,9 @@ build system.
 
 Supported cmake definitions/options
 =======================================
-Below a list of some useful cmake configurations:
-
-============================== ====================================================================================================
-Definition name                Description
-============================== ====================================================================================================
-BOOST_ROOT=C:\..               Folder where Boost is installed. Not needed if Boost is installed with the system package manager. Boost is used only by the tests and the inspector, never by ``liblicensecc`` itself. If cmake is reporting Boost not found consider updating cmake.
-BUILD_SHARED_LIBS=OFF          Additionally build the shared (DLL) version of the library. Requires -DSTATIC_RUNTIME=OFF.
-CMAKE_BUILD_TYPE=Release       Build configuration, use Release for a release build (should be used as default).
-CMAKE_INSTALL_PREFIX=C:\XX     Folder where to install libraries and headers.
-LCC_PROJECT_NAME=<name>        Name of the software you want to issue a license for. Defaults to "DEFAULT".
-OPENSSL_ROOT_DIR=C:\..         (Optional) Folder where OpenSSL is installed (eg. C:\Program Files\OpenSSL-Win64). Only used when OpenSSL support is enabled.
-STATIC_RUNTIME=ON              Link statically to the standard and runtime support libraries (compiler flag /MT). Default ON.
-USE_OPENSSL=OFF                Enable/Disable OpenSSL support (search for and link against OpenSSL). Default OFF on Windows: the Windows crypto APIs are used instead, no additional feature from OpenSSL. If enabled and OpenSSL is not found the build fails.
-OPENSSL_USE_STATIC_LIBS=ON     Link against the static or dynamic version of openssl libraries (if OpenSSL selected) 
-============================== ====================================================================================================
+For a complete, always-current list of CMake options (including ``BOOST_ROOT``,
+``STATIC_RUNTIME``, ``USE_OPENSSL`` and the project-related variables) see the
+:doc:`Dependencies <Dependencies>` page, which is the single source of truth for both Linux and Windows.
 
 Compile and test 
 
@@ -101,7 +89,7 @@ Compile and test
   ctest -C Release
 
 
-Compile and build (Visual studio 2026)
+Compile and build (Visual Studio 2022)
 ==========================================
 
 Visual Studio 2022 integrates with CMake (the process requires a couple of restarts and it's all but "fluid").
@@ -137,42 +125,47 @@ cryptography APIs are used):
 
 MINGW 
 *****************
-Mingw is not tested (=unsupported) in 2.5.0 but it was by version 2.0 and it may be in future. 
-This section is a placeholder from the old release (BTW if it works please comment in the forum)
+MinGW is not covered by CI in 2.5.0, but it worked in 2.0.0 and may work again in the future.
+This section provides a best-effort recipe; if it works for you please comment in the forum.
 
-.. TODO::
-   
-   Describe how to install and configure mingw
+Prerequisites:
 
-Prerequistites:
-
-* Powershell
-* 7zip
+* PowerShell
+* 7-Zip
 * git
 * cmake
+* an MSYS2 or MinGW-w64 toolchain (gcc/g++), or pre-built MinGW Boost/OpenSSL packages
 
-Install and compile boost:
+The easiest way to get the dependencies is via `MSYS2 <https://www.msys2.org/>`_:
 
 .. code-block:: console
 
-    wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.7z
-    7z x boost_1_64_0.7z -oC:/local
-    cd "C:\local\boost_1_64_0"
-    bootstrap.bat gcc 
-    b2.exe -d0 --with-date_time --with-test --with-filesystem --with-program_options --with-regex --with-serialization --with-system runtime-link=static toolset=gcc --prefix=C:\local\boost_1_68_0\boost-mingw install
-    cd C:/local/boost_1_64_0/boost-mingw/lib
-    dir 
+   pacman -S mingw-w64-x86_64-toolchain \
+             mingw-w64-x86_64-boost \
+             mingw-w64-x86_64-openssl \
+             mingw-w64-x86_64-cmake \
+             mingw-w64-x86_64-ninja
 
-Verify boost is really compiled. Go to the folder where you want to download `licensecc` 
+Alternatively, pre-compiled Boost binaries are available from the
+`boostorg/boost <https://github.com/boostorg/boost/releases>`_ releases (source) or the
+`userdocs/boost <https://github.com/userdocs/boost/releases>`_ releases (binaries).
+
+Verify the toolchain is on ``PATH``, then check out and build `licensecc`:
 
 .. code-block:: console
 
    git clone --recursive https://github.com/open-license-manager/licensecc.git
-   cd licensecc/build && cmake -G "MinGW Makefiles" -DBOOST_ROOT="C:/local/boost_1_68_0/boost-mingw" -DBoost_ARCHITECTURE="-x64" -DCMAKE_CXX_COMPILER_ARCHITECTURE_ID="x64" -DCMAKE_SH="CMAKE_SH-NOTFOUND" ..
+   cd licensecc/build
+   cmake -G "MinGW Makefiles" \
+     -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+     -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+     -DBOOST_ROOT="C:/msys64/mingw64" \
+     ..
    cmake --build . --target install --config Release
 
-And then you can test it:
-   
+Adapt ``BOOST_ROOT`` (and add ``OPENSSL_ROOT_DIR`` if OpenSSL is elsewhere) to your actual
+installation. Then run the tests:
+
 .. code-block:: console
 
    ctest -C Release

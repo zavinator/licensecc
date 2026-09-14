@@ -32,6 +32,9 @@ Components
        output, returning a ``FUNCTION_RETURN``. The default verifiers are
        ``verify_date`` (``limits/date_verifier.cpp``), ``verify_pc_signature``,
        ``verify_virtualization`` and ``verify_signature``.
+   * - ``merge_licenses`` (file-static free function in ``Licensecc.cpp``)
+     - Picks the best valid license (no-input, or latest expiry) and fills
+       ``LicenseInfo``; decides the final ``LCC_EVENT_TYPE``.
 
 .. note::
 
@@ -40,10 +43,6 @@ Components
    system clock, and may fail with ``TIME_OUT_OF_SYNC`` instead of ``LICENSE_OK`` /
    ``PRODUCT_EXPIRED``. See the settings documented in
    :ref:`Extension points <api/extend:Tweak the date verification>`.
-
-   * - ``merge_licenses`` (file-static free function in ``Licensecc.cpp``)
-     - Picks the best valid license (no-input, or latest expiry) and fills
-       ``LicenseInfo``; decides the final ``LCC_EVENT_TYPE``.
 
 Sequence diagram
 ****************
@@ -79,7 +78,4 @@ Notes
 - Strategies that return no locations are skipped by the cursor.
 - Events (found/not found/malformed) are recorded in the shared
   ``EventRegistry`` and exported to ``LicenseInfo::status`` at the end.
-- ``merge_licenses`` (a file-static free function in ``Licensecc.cpp``) chooses
-  the license with no expiry, else the one with the latest ``days_left``/expiry
-  among the valid ones.
 

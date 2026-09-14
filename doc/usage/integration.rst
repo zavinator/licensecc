@@ -7,6 +7,8 @@ expanding the content of :ref:`quickstart <usage/quickstart:Quickstart>`.
 
 Working examples are provided in the `examples <https://github.com/open-license-manager/examples>`_ project.
 
+.. _step-1-locate-and-link-the-library-cmake:
+
 Step 1 — Locate and link the library (CMake)
 *********************************************
 
@@ -115,6 +117,8 @@ A complete working example using this method is available in the
 `simple_pc_identifier <https://github.com/open-license-manager/examples/tree/develop/simple_pc_identifier>`_
 project.
 
+
+.. _call-licensecc-from-your-code:
 
 Call Licensecc from your code
 ***************************************

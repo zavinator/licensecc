@@ -1,13 +1,13 @@
 ###########################################
-Projects, features and versions
+Projects and features
 ###########################################
 
 Projects
 ================
 
 Licensecc is a library to protect your software from unauthorized copies. It does so generating a private key
-to sign the licenses and a public key to verify the signatures. The public key is included in binary form in the 
-compiled `licensecc-static-lib` library at compile time. 
+to sign the licenses and a public key to verify the signatures. The public key is included in binary form in the
+compiled `licensecc` library at compile time. 
 
 Since we're open source the keys can't be generated once and committed to github, we need to generate them before the 
 compilation of the library. 
@@ -40,15 +40,16 @@ and you want to issue licenses separately (licenses of "Foo" incompatible with "
 * for each project: 
   	* configure, compile and install `licensecc`
 
-In "Foo" and "Bar" (your original software) be sure to locate and link the right version of `licensecc-static-lib`. Eg. in your "Foo" CmakeLists.txt:
+In "Foo" and "Bar" (your original software) be sure to locate and link the right version of the `licensecc`
+library, targeting the imported ``licensecc::licensecc`` CMake target in your ``CMakeLists.txt``:
 
-Copy ``Findlicensecc.cmake`` from examples project in your project ``./cmake/`` folder.
-Add the following lines to your ``CmakeLists.txt``
- 
-.. code-block:: 
+.. code-block:: cmake
 
-  SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-  find_package(licensecc 2.0.0 REQUIRED COMPONENTS "FooLicensecc")
+  add_subdirectory(path/to/licensecc)
+  target_link_libraries(Foo PRIVATE licensecc::licensecc)
+
+See :ref:`integrate licensecc <usage/integration:Integrate Licensecc in your application>` for the full
+linking instructions (including the ``find_package`` alternative when ``licensecc`` is installed separately).
 
 
 Features
