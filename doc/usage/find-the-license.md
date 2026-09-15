@@ -43,4 +43,5 @@ The environment variable names and the near-module lookup flag are defined per-p
 - `LCC_LICENSE_DATA_ENV_VAR` (`LICENSE_DATA`)
 - `LCC_LICENSE_FILE_EXTENSION` (`.lic`)
 
-See the [extension points](../api/extend) reference for details on editing that generated file.
+See the [configuration](../api/configure) reference for details on editing that generated file, and
+for which of these settings can be overridden from the build line instead.

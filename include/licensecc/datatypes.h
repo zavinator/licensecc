@@ -40,8 +40,8 @@ typedef enum {
 	IDENTIFIER_NOT_AVAILABLE = 10,	// For some reason the method is unable to calculate the requested identifier
 	/**
 	 * The local system time can't be trusted. Either the NTP server wasn't reachable and
-	 * NTP_CHECK is set to NTP_CHECK_REQUIRED, or the difference between the system time and
-	 * the NTP server time is greater than MAX_ALLOWED_OFFSET_SEC.
+	 * LCC_NTP_CHECK is set to LCC_NTP_CHECK_REQUIRED, or the difference between the system time and
+	 * the NTP server time is greater than LCC_MAX_ALLOWED_OFFSET_SEC.
 	 * See licensecc_properties.h for both settings.
 	 */
 	TIME_OUT_OF_SYNC = 11,

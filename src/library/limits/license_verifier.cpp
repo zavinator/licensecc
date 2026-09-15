@@ -15,7 +15,7 @@ using namespace std;
 LicenseVerifier::LicenseVerifier() : LicenseVerifier(std::vector<LimitVerifierFn>()) {}
 
 LicenseVerifier::LicenseVerifier(const std::vector<LimitVerifierFn>& extra_verifiers) : m_verifiers(extra_verifiers) {
-#if (ADD_DEFAULT_LIMITS == 1)
+#if (LCC_ADD_DEFAULT_LIMITS == 1)
 	m_verifiers.push_back(verify_date);
 	m_verifiers.push_back(verify_pc_signature);
 	m_verifiers.push_back(verify_virtualization);

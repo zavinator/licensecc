@@ -57,6 +57,12 @@ Options noted "not on Windows" are ignored/not applicable on that platform.
 | `STATIC_RUNTIME`             | Link statically to the C/C++ runtime libraries (`/MT` on Windows, `-static` on Linux). Default OFF on Linux, ON on Windows. |
 | `USE_OPENSSL`                | Enable/Disable OpenSSL support. On Linux it is mandatory and cannot be disabled (default ON). On Windows the Windows cryptography APIs are used instead and this defaults OFF; enabling it adds no additional feature. |
 
+These variables configure the *build*. The settings that tune the behavior of the library (the NTP
+check of the license dates, where the licenses are looked for, the api buffer sizes) are macros in the
+generated `licensecc_properties.h`: some of them can be overridden at build time, as described in the
+[configuration](../api/configure) page. Note that they must reach the compiler as compile definitions —
+`cmake -DLCC_NTP_SERVER_NAME=...` alone just sets a CMake variable and does nothing.
+
 Notes:
 <sup>1</sup> There is no added feature in compiling `licensecc` with OpenSSL under Windows; do so only if it's
 already part of your project, otherwise go without.

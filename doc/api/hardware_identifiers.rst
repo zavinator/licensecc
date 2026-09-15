@@ -39,8 +39,11 @@ If you want to change the strategy that is used to generate the default identifi
    #define LCC_DOCKER_STRATEGIES { STRATEGY_CPU_MODEL, STRATEGY_NONE }
    #define LCC_CLOUD_STRATEGIES { STRATEGY_CPU_MODEL, STRATEGY_NONE }
 
+The strategy lists are plain definitions in ``licensecc_properties.h`` (not ``#ifndef`` guarded), so
+editing that file and rebuilding is the only way to change them. See
+:doc:`configure <configure>` for the settings that can be overridden from the build line instead.
 
-Implement your own hardware signature generator 
+Implement your own hardware signature generator
 *************************************************
 
 Extend the following class:

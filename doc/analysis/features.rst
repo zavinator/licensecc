@@ -109,7 +109,7 @@ This is the most common limit set on a license, allow the software to expire aft
 
 A license can also declare a start date (``valid-from``). The dates can be verified against the time
 reported by an NTP server, so a customer can't roll the system clock back to keep using an expired
-license (:ref:`configure it here <api/extend:Tweak the date verification>`).
+license (:ref:`configure it here <api/configure:Tweak the date verification>`).
 
 .. warning::
 

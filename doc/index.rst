@@ -98,20 +98,30 @@ Otherwise you can open an issue in the `issue system`_. Have a look to the `cont
 
    
 .. toctree::
-   :glob:
    :maxdepth: 2
    :hidden:
-   :caption: Build the library:
-  
-   development/*
+   :caption: Get started:
+
+   usage/quickstart
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :hidden:
+   :caption: Build the library:
+
+   development/*
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
    :caption: Integrate and use:
-   
-   usage/*
+
+   usage/concepts
+   usage/find-the-license
+   usage/Hardware-identifiers
+   usage/integration
+   usage/issue-licenses
    
 .. toctree::
    :maxdepth: 2
@@ -119,6 +129,7 @@ Otherwise you can open an issue in the `issue system`_. Have a look to the `cont
    :caption: API:
   
    api/public_api
+   api/configure
    api/extend
    api/hardware_identifiers
 

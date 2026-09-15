@@ -153,14 +153,14 @@ BOOST_AUTO_TEST_CASE(a_clock_set_in_the_past_revives_an_expired_license) {
 
 BOOST_AUTO_TEST_CASE(clock_offset_within_the_limit_is_accepted) {
 	BOOST_CHECK_EQUAL(check_clock_offset(true, 0.0), LICENSE_OK);
-	BOOST_CHECK_EQUAL(check_clock_offset(true, (double)(MAX_ALLOWED_OFFSET_SEC)-1), LICENSE_OK);
+	BOOST_CHECK_EQUAL(check_clock_offset(true, (double)(LCC_MAX_ALLOWED_OFFSET_SEC)-1), LICENSE_OK);
 	// a clock running fast is off by a negative amount, it is accepted too
-	BOOST_CHECK_EQUAL(check_clock_offset(true, -((double)(MAX_ALLOWED_OFFSET_SEC)-1)), LICENSE_OK);
-	BOOST_CHECK_EQUAL(check_clock_offset(true, ((double)(MAX_ALLOWED_OFFSET_SEC)) * -1), LICENSE_OK);
+	BOOST_CHECK_EQUAL(check_clock_offset(true, -((double)(LCC_MAX_ALLOWED_OFFSET_SEC)-1)), LICENSE_OK);
+	BOOST_CHECK_EQUAL(check_clock_offset(true, ((double)(LCC_MAX_ALLOWED_OFFSET_SEC)) * -1), LICENSE_OK);
 }
 
 BOOST_AUTO_TEST_CASE(clock_offset_over_the_limit_is_rejected) {
-	const double over_the_limit = (double)(MAX_ALLOWED_OFFSET_SEC) + 1;
+	const double over_the_limit = (double)(LCC_MAX_ALLOWED_OFFSET_SEC) + 1;
 
 	BOOST_CHECK_EQUAL(check_clock_offset(true, over_the_limit), TIME_OUT_OF_SYNC);
 	BOOST_CHECK_EQUAL(check_clock_offset(true, -over_the_limit), TIME_OUT_OF_SYNC);
@@ -169,14 +169,16 @@ BOOST_AUTO_TEST_CASE(clock_offset_over_the_limit_is_rejected) {
 }
 
 BOOST_AUTO_TEST_CASE(ntp_check_is_configured) {
-	BOOST_CHECK_MESSAGE(NTP_CHECK == NTP_CHECK_NO || NTP_CHECK == NTP_CHECK_OPTIONAL || NTP_CHECK == NTP_CHECK_REQUIRED,
-						"NTP_CHECK must be one of NTP_CHECK_NO, NTP_CHECK_OPTIONAL, NTP_CHECK_REQUIRED");
+	BOOST_CHECK_MESSAGE(
+		LCC_NTP_CHECK == LCC_NTP_CHECK_NO || LCC_NTP_CHECK == LCC_NTP_CHECK_OPTIONAL ||
+			LCC_NTP_CHECK == LCC_NTP_CHECK_REQUIRED,
+		"LCC_NTP_CHECK must be one of LCC_NTP_CHECK_NO, LCC_NTP_CHECK_OPTIONAL, LCC_NTP_CHECK_REQUIRED");
 }
 
-#if (NTP_CHECK == NTP_CHECK_REQUIRED)
+#if (LCC_NTP_CHECK == LCC_NTP_CHECK_REQUIRED)
 BOOST_AUTO_TEST_CASE(missing_ntp_server_is_an_error) {
 	BOOST_CHECK_EQUAL(check_clock_offset(false, 0.0), TIME_OUT_OF_SYNC);
-	BOOST_CHECK_EQUAL(check_clock_offset(false, (double)(MAX_ALLOWED_OFFSET_SEC)), TIME_OUT_OF_SYNC);
+	BOOST_CHECK_EQUAL(check_clock_offset(false, (double)(LCC_MAX_ALLOWED_OFFSET_SEC)), TIME_OUT_OF_SYNC);
 }
 #else
 BOOST_AUTO_TEST_CASE(missing_ntp_server_falls_back_to_the_system_clock) {

@@ -134,7 +134,7 @@ the identifier generation will follow these steps:
     * If it detects it's running in a Virtual Machine it will try the strategies in :c:macro:`LCC_VM_STRATEGIES`, it will try them one by one until the first one succeeds.
 
 if you're interested in implementing your own hardware identification strategy you can have a look to the library
-:ref:`extension points <api/extend:Tweak default hardware signature generator>`.
+:ref:`configuration <api/configure:Tweak default hardware signature generator>`.
 
 .. TIP::
 
@@ -153,7 +153,8 @@ if you're interested in implementing your own hardware identification strategy y
     The default strategies used in each environment are defined by the macros
     :c:macro:`LCC_BARE_TO_METAL_STRATEGIES`, :c:macro:`LCC_VM_STRATEGIES`,
     :c:macro:`LCC_DOCKER_STRATEGIES`, and :c:macro:`LCC_CLOUD_STRATEGIES`.
-    These can be customized per-project in ``licensecc_properties.h``.
+    These can be customized per-project in ``licensecc_properties.h``, see
+    :ref:`API parameters, constants, defaults <api/configure:API parameters, constants, defaults: licensecc_properties.h>`.
 
 .. tip::
 

@@ -15,7 +15,7 @@ namespace license {
 /**
  * Verifies the license begin/expiry dates and populates the date fields of `LicenseInfo`.
  * If the license declares a date limit the system clock is checked against the NTP server declared
- * by `NTP_CHECK`/`NTP_SERVER_NAME` in `licensecc_properties.h`, and the dates are verified against
+ * by `LCC_NTP_CHECK`/`LCC_NTP_SERVER_NAME` in `licensecc_properties.h`, and the dates are verified against
  * the server time. Licenses without date limits are verified against the system clock and no
  * network access is performed.
  */

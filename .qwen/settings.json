@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(clang-format *)",
+      "Bash(grep *)",
+      "Bash(diff *)",
+      "Bash(ls *)",
+      "Bash(test *)",
+      "Bash(find *)",
+      "Bash(git mv)",
+      "Bash(python3 *)",
+      "Bash(tail *)",
+      "Bash(which *)",
+      "Bash(cat *)",
+      "Bash(sphinx-build *)",
+      "Bash(/usr/bin/python3 *)",
+      "Bash($p *)",
+      "Bash(done)",
+      "Bash(cd *)",
+      "Bash(head *)",
+      "Bash(sort)",
+      "Bash(uniq *)"
+    ]
+  },
+  "$version": 4
+}

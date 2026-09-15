@@ -67,6 +67,13 @@ LCC_PROJECT_NAME       | Name of the project (the software being licensed). It m
                        | used.
 ==================== =====================================================================
 
+.. note::
+
+   The variables above select *which* project is built. The settings that change *how* the library
+   behaves (where the licenses are searched, whether the dates are verified against an NTP server,
+   the api buffer sizes) are macros in the generated ``licensecc_properties.h``, not CMake
+   variables: see :doc:`configuration </api/configure>`.
+
 The directory structure created by ``make install`` looks like this:
 
 .. code-block::

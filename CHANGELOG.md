@@ -4,7 +4,7 @@
 
 ### Projects Generated With an Older Version
 
-**`licensecc_properties.h` of an existing project must be regenerated.** The new version declare the int `NTP_CHECK` (and `NTP_SERVER_NAME`, `MAX_ALLOWED_OFFSET_SEC`). Delete the generated file
+**`licensecc_properties.h` of an existing project must be regenerated.** The new version declare the int `LCC_NTP_CHECK` (and `LCC_NTP_SERVER_NAME`, `LCC_MAX_ALLOWED_OFFSET_SEC`). Delete the generated file
 and re-run the project configuration step:
 
 ```
@@ -13,9 +13,9 @@ rm projects/<YOUR_PROJECT>/include/licensecc/<YOUR_PROJECT>/licensecc_properties
 
 ## Changes
 
-- **Date limits verified against an NTP server** (`#160`, `#173`) — `verify_date` was extracted into `src/library/limits/date_verifier.cpp` and can now query the NTP server declared in `licensecc_properties.h` (`NTP_SERVER_NAME`) before validating `valid-from`/`valid-to`, so that rolling the system clock back doesn't keep an expired license working. Two new settings control the behavior: `NTP_CHECK` (`NTP_CHECK_NO` = use the system clock, `NTP_CHECK_OPTIONAL` = default, fall back to the system clock when the server is unreachable, `NTP_CHECK_REQUIRED` = reject the license) and `MAX_ALLOWED_OFFSET_SEC` (maximum tolerated difference between the local clock and the server, default 3600). Licenses without date limits never access the network.
+- **Date limits verified against an NTP server** (`#160`, `#173`) — `verify_date` was extracted into `src/library/limits/date_verifier.cpp` and can now query the NTP server declared in `licensecc_properties.h` (`LCC_NTP_SERVER_NAME`) before validating `valid-from`/`valid-to`, so that rolling the system clock back doesn't keep an expired license working. Two new settings control the behavior: `LCC_NTP_CHECK` (`LCC_NTP_CHECK_NO` = use the system clock, `LCC_NTP_CHECK_OPTIONAL` = default, fall back to the system clock when the server is unreachable, `LCC_NTP_CHECK_REQUIRED` = reject the license) and `LCC_MAX_ALLOWED_OFFSET_SEC` (maximum tolerated difference between the local clock and the server, default 3600). Licenses without date limits never access the network.
 - **New API event `TIME_OUT_OF_SYNC`** (11) in `LCC_EVENT_TYPE`, reported when the system clock can't be trusted.
-- **New header-only NTP client** `src/library/sntp/sntp.h`, implementing the client side of rfc 4330 over udp, no additional dependency. N.B. NTP is not authenticated: it protects against casual clock manipulation, not against an attacker able to spoof the udp traffic.
+- **New NTP client** `src/library/sntp/sntp.h`, implementing the client side of rfc 4330 over udp N.B. NTP is not authenticated: it protects against casual clock manipulation, not against an attacker able to spoof the udp traffic.
 
 # licensecc v2.1.0 Release Notes
 

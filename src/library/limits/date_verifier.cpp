@@ -30,24 +30,24 @@ bool license_has_date_limits(const FullLicenseInfo& licInfo) {
 
 LCC_EVENT_TYPE check_clock_offset(bool ntp_reachable, double offset_seconds) {
 	if (ntp_reachable) {
-		if (fabs(offset_seconds) <= (double)(MAX_ALLOWED_OFFSET_SEC)) {
+		if (fabs(offset_seconds) <= (double)(LCC_MAX_ALLOWED_OFFSET_SEC)) {
 			return LICENSE_OK;
 		}
 		LOG_ERROR(
 			"The difference between the system clock and the NTP server [%s] is %ld seconds, more than the "
 			"%d seconds allowed. The system time can't be trusted.",
-			NTP_SERVER_NAME, (long)offset_seconds, (int)(MAX_ALLOWED_OFFSET_SEC));
+			LCC_NTP_SERVER_NAME, (long)offset_seconds, (int)(LCC_MAX_ALLOWED_OFFSET_SEC));
 		return TIME_OUT_OF_SYNC;
 	}
 
-#if (NTP_CHECK == NTP_CHECK_REQUIRED)
+#if (LCC_NTP_CHECK == LCC_NTP_CHECK_REQUIRED)
 	LOG_ERROR(
-		"The NTP server [%s] is not reachable and NTP_CHECK is set to NTP_CHECK_REQUIRED. The system "
+		"The NTP server [%s] is not reachable and LCC_NTP_CHECK is set to LCC_NTP_CHECK_REQUIRED. The system "
 		"time can't be trusted.",
-		NTP_SERVER_NAME);
+		LCC_NTP_SERVER_NAME);
 	return TIME_OUT_OF_SYNC;
 #else
-	LOG_WARN("The NTP server [%s] is not reachable, falling back to the system clock.", NTP_SERVER_NAME);
+	LOG_WARN("The NTP server [%s] is not reachable, falling back to the system clock.", LCC_NTP_SERVER_NAME);
 	return LICENSE_OK;
 #endif
 }
@@ -55,10 +55,10 @@ LCC_EVENT_TYPE check_clock_offset(bool ntp_reachable, double offset_seconds) {
 LCC_EVENT_TYPE sync_system_clock(time_t& out_now) {
 	out_now = time(nullptr);
 
-#if (NTP_CHECK != NTP_CHECK_NO)
+#if (LCC_NTP_CHECK != LCC_NTP_CHECK_NO)
 	time_t server_time = 0;
 	time_t reference_time = 0;
-	const bool ntp_reachable = sntp::query(NTP_SERVER_NAME, server_time, reference_time);
+	const bool ntp_reachable = sntp::query(LCC_NTP_SERVER_NAME, server_time, reference_time);
 	// the local time has been captured just before the request was sent, so the offset
 	// includes the network round trip.
 	const double offset_seconds = ntp_reachable ? difftime(reference_time, server_time) : 0.0;
@@ -66,7 +66,7 @@ LCC_EVENT_TYPE sync_system_clock(time_t& out_now) {
 	const LCC_EVENT_TYPE result = check_clock_offset(ntp_reachable, offset_seconds);
 	if (ntp_reachable) {
 		out_now = server_time;
-		LOG_DEBUG("NTP server [%s] answered, the system clock is off by %ld seconds.", NTP_SERVER_NAME,
+		LOG_DEBUG("NTP server [%s] answered, the system clock is off by %ld seconds.", LCC_NTP_SERVER_NAME,
 				  (long)offset_seconds);
 	}
 	return result;

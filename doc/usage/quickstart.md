@@ -115,6 +115,11 @@ projects/
     └── licenses/                            # The license files you will generate
 ```
 
+`licensecc_properties.h` is generated once per project and holds its customization points (buffer
+sizes, where the license is looked for, the NTP check of the dates): see
+[configuration](../api/configure) for what you can change there and for the settings that can be
+overridden without editing it.
+
 ```
 +-------------------+       +-------------------+
 |  lccgen \         +------>+  projects/MyApp/  |

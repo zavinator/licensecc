@@ -39,10 +39,10 @@ Components
 .. note::
 
    ``verify_date`` is the only verifier that can access the network: when the license declares a
-   date limit and ``NTP_CHECK`` is not ``NTP_CHECK_NO`` it queries an NTP server to check the
+   date limit and ``LCC_NTP_CHECK`` is not ``LCC_NTP_CHECK_NO`` it queries an NTP server to check the
    system clock, and may fail with ``TIME_OUT_OF_SYNC`` instead of ``LICENSE_OK`` /
    ``PRODUCT_EXPIRED``. See the settings documented in
-   :ref:`Extension points <api/extend:Tweak the date verification>`.
+   :ref:`Configuration <api/configure:Tweak the date verification>`.
 
 Sequence diagram
 ****************
