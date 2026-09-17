@@ -84,9 +84,66 @@ static LCC_EVENT_TYPE verifyLicense(const string& fname) {
 	return result;
 }
 
+static void findAndVerifyLicense(const string& licenseFile) {
+	if (!licenseFile.empty()) {
+		const string fname(licenseFile);
+		ifstream license_file(fname);
+		if (license_file.good()) {
+			verifyLicense(fname);
+		} else {
+			cerr << "license file :" << fname << " not found." << endl;
+		}
+	}
+	bool find_license_with_env_var = FIND_LICENSE_WITH_ENV_VAR;
+	if (find_license_with_env_var) {
+		char* env_var_value = getenv(LCC_LICENSE_LOCATION_ENV_VAR);
+		if (env_var_value != nullptr && env_var_value[0] != '\0') {
+			cout << "environment variable [" << LCC_LICENSE_LOCATION_ENV_VAR << "] value [" << env_var_value << "]"
+				 << endl;
+			const vector<string> declared_licenses = license::split_string(string(env_var_value), ';');
+			for (string fname : declared_licenses) {
+				ifstream license_file(fname);
+				if (license_file.good()) {
+					verifyLicense(fname);
+				} else {
+					cerr << "license file :" << fname << " not found." << endl;
+				}
+			}
+		} else {
+			cout << "environment variable [" << LCC_LICENSE_LOCATION_ENV_VAR << "] configured but not defined." << endl;
+		}
+	}
+}
+
 int main(int argc, char* argv[]) {
+	bool quiet = false;
+	string licenseFile;
+	for (int i = 1; i < argc; i++) {
+		const string arg(argv[i]);
+		if (arg == "-q") {
+			quiet = true;
+		} else if (!licenseFile.empty()) {
+			cerr << "unexpected argument: " << arg << endl;
+			return 1;
+		} else {
+			licenseFile = arg;
+		}
+	}
+	if (quiet && !licenseFile.empty()) {
+		cerr << "-q and license file are mutually exclusive." << endl;
+		return 1;
+	}
+
 	char hw_identifier[LCC_API_PC_IDENTIFIER_SIZE];
 	ExecutionEnvironmentInfo exec_env_info;
+	if (quiet) {
+		if (!identify_pc(STRATEGY_DEFAULT, hw_identifier, nullptr)) {
+			cerr << "unable to compute the default hardware identifier." << endl;
+			return 1;
+		}
+		std::cout << hw_identifier;
+		return 0;
+	}
 	for (const auto& x : stringByStrategyId) {
 		if (identify_pc(static_cast<LCC_API_HW_IDENTIFICATION_STRATEGY>(x.first), hw_identifier, &exec_env_info)) {
 			std::cout << x.second << ':' << hw_identifier << std::endl;
@@ -155,32 +212,5 @@ int main(int argc, char* argv[]) {
 	cout << "Cpu Cores  (dmi) :" << board_info.cpu_cores() << endl;
 	cout << "==================" << endl;
 
-	if (argc == 2) {
-		const string fname(argv[1]);
-		ifstream license_file(fname);
-		if (license_file.good()) {
-			verifyLicense(fname);
-		} else {
-			cerr << "license file :" << fname << " not found." << endl;
-		}
-	}
-	bool find_license_with_env_var = FIND_LICENSE_WITH_ENV_VAR;
-	if (find_license_with_env_var) {
-		char* env_var_value = getenv(LCC_LICENSE_LOCATION_ENV_VAR);
-		if (env_var_value != nullptr && env_var_value[0] != '\0') {
-			cout << "environment variable [" << LCC_LICENSE_LOCATION_ENV_VAR << "] value [" << env_var_value << "]"
-				 << endl;
-			const vector<string> declared_licenses = license::split_string(string(env_var_value), ';');
-			for (string fname : declared_licenses) {
-				ifstream license_file(fname);
-				if (license_file.good()) {
-					verifyLicense(fname);
-				} else {
-					cerr << "license file :" << fname << " not found." << endl;
-				}
-			}
-		} else {
-			cout << "environment variable [" << LCC_LICENSE_LOCATION_ENV_VAR << "] configured but not defined." << endl;
-		}
-	}
+	findAndVerifyLicense(licenseFile);
 }
