@@ -2,10 +2,15 @@
 #include <windows.h>
 #include <algorithm>
 #include <cstdint>
+#include <cstddef>
+#include <cstring>
 #include <cwctype>
+#include <set>
+#include <vector>
 #include <licensecc/datatypes.h>
 #include <iphlpapi.h>
 #include <stdio.h>
+#include <winioctl.h>
 
 #include "../../base/string_utils.h"
 #include "../../base/logger.h"
@@ -26,64 +31,124 @@ FUNCTION_RETURN getMachineName(unsigned char identifier[6]) {
 	return result;
 }
 
-// http://www.ok-soft-gmbh.com/ForStackOverflow/EnumMassStorage.c
-// http://stackoverflow.com/questions/3098696/same-code-returns-diffrent-result-on-windows7-32-bit-system
-#define MAX_UNITS 40
-// bug check return with diskinfos == null func_ret_ok
-FUNCTION_RETURN getDiskInfos(std::vector<DiskInfo>& diskInfos) {
-	DWORD fileMaxLen;
-	size_t ndrives = 0, drives_scanned = 0;
-	DWORD fileFlags;
-	char volName[MAX_PATH];
-	DWORD volSerial = 0;
-	const DWORD dwSize = MAX_PATH;
-	char szLogicalDrives[MAX_PATH] = {0};
+static bool getPhysicalDiskNumber(const char* drive, DWORD& diskNumber) {
+	const std::string volumePath = std::string("\\\\.\\") + drive[0] + ':';
+	HANDLE volume = CreateFileA(volumePath.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+								   nullptr, OPEN_EXISTING, 0, nullptr);
+	if (volume == INVALID_HANDLE_VALUE) {
+		return false;
+	}
 
-	FUNCTION_RETURN return_value;
-	const DWORD dwResult = GetLogicalDriveStrings(dwSize, szLogicalDrives);
+	VOLUME_DISK_EXTENTS extents = {};
+	DWORD bytesReturned = 0;
+	const BOOL success = DeviceIoControl(volume, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, nullptr, 0,
+											 &extents, sizeof(extents), &bytesReturned, nullptr);
+	CloseHandle(volume);
+	// A volume spanning multiple extents needs a larger buffer; it has no unambiguous disk here.
+	if (!success || extents.NumberOfDiskExtents != 1) {
+		return false;
+	}
+	diskNumber = extents.Extents[0].DiskNumber;
+	return true;
+}
 
-	if (dwResult > 0) {
-		return_value = FUNC_RET_OK;
-		char* szSingleDrive = szLogicalDrives;
-		while (*szSingleDrive && drives_scanned < MAX_UNITS) {
-			// get the next drive
-			UINT driveType = GetDriveType(szSingleDrive);
-			if (driveType == DRIVE_FIXED) {
-				char fileSysName[MAX_PATH];
-				BOOL success = GetVolumeInformation(szSingleDrive, volName, MAX_PATH, &volSerial, &fileMaxLen,
-													&fileFlags, fileSysName, MAX_PATH);
-				if (success) {
-					LOG_DEBUG("drive: %s,volume Name: %s, Volume Serial: 0x%x,Filesystem: %s", szSingleDrive, volName,
-							  volSerial, fileSysName);
-					DiskInfo diskInfo = {0};
-					diskInfo.id = (int)ndrives;
-					diskInfo.label_initialized = true;
-					license::mstrlcpy(diskInfo.device, volName, min(std::size_t{MAX_PATH}, sizeof(volName)));
-					license::mstrlcpy(diskInfo.label, fileSysName,
-									  min(sizeof(diskInfos[ndrives].label), sizeof(fileSysName)));
-					diskInfo.disk_uuid = std::to_string(volSerial);
-					diskInfo.uuid_initialized = true;
-					diskInfo.preferred = (szSingleDrive[0] == 'C');
-					diskInfos.push_back(diskInfo);
-					ndrives++;
-				} else {
-					LOG_DEBUG("Unable to retrieve information of '%s'", szSingleDrive);
+static bool getPhysicalDiskSerial(DWORD diskNumber, std::string& serial) {
+	const std::string diskPath = "\\\\.\\PhysicalDrive" + std::to_string(diskNumber);
+	HANDLE disk = CreateFileA(diskPath.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							   nullptr, OPEN_EXISTING, 0, nullptr);
+	if (disk == INVALID_HANDLE_VALUE) {
+		return false;
+	}
+
+	STORAGE_PROPERTY_QUERY query = {};
+	query.PropertyId = StorageDeviceProperty;
+	query.QueryType = PropertyStandardQuery;
+	STORAGE_DESCRIPTOR_HEADER header = {};
+	DWORD bytesReturned = 0;
+	bool found = false;
+	if (DeviceIoControl(disk, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query), &header, sizeof(header),
+						&bytesReturned, nullptr) && header.Size >= sizeof(STORAGE_DEVICE_DESCRIPTOR) &&
+		header.Size <= 65536) {
+		std::vector<unsigned char> buffer(header.Size);
+		if (DeviceIoControl(disk, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query), buffer.data(),
+							header.Size, &bytesReturned, nullptr) && bytesReturned >= sizeof(STORAGE_DEVICE_DESCRIPTOR)) {
+			STORAGE_DEVICE_DESCRIPTOR descriptor = {};
+			std::memcpy(&descriptor, buffer.data(), sizeof(descriptor));
+			const DWORD offset = descriptor.SerialNumberOffset;
+			if (offset >= offsetof(STORAGE_DEVICE_DESCRIPTOR, RawDeviceProperties) && offset < bytesReturned) {
+				const char* begin = reinterpret_cast<const char*>(buffer.data() + offset);
+				const char* end = reinterpret_cast<const char*>(buffer.data() + bytesReturned);
+				const char* terminator = std::find(begin, end, '\0');
+				if (terminator != end) {
+					serial.assign(begin, terminator);
+					const size_t first = serial.find_first_not_of(" \t\r\n");
+					const size_t last = serial.find_last_not_of(" \t\r\n");
+					if (first != std::string::npos) {
+						serial = serial.substr(first, last - first + 1);
+						found = true;
+					}
 				}
-			} else {
-				LOG_DEBUG("This volume is not fixed : %s, type: %d", szSingleDrive);
 			}
-			szSingleDrive += strlen(szSingleDrive) + 1;
-			drives_scanned++;
 		}
 	}
-	if (diskInfos.size() > 0) {
-		return_value = FUNC_RET_OK;
-	} else {
-		return_value = FUNC_RET_NOT_AVAIL;
-		LOG_DEBUG("No fixed drive were detected");
+	CloseHandle(disk);
+	return found;
+}
+
+static bool getVolumeSerial(const char* drive, std::string& serial) {
+	DWORD volumeSerial = 0;
+	if (!GetVolumeInformationA(drive, nullptr, 0, &volumeSerial, nullptr, nullptr, nullptr, 0)) {
+		return false;
+	}
+	serial = std::to_string(volumeSerial);
+	return true;
+}
+
+FUNCTION_RETURN getDiskInfos(std::vector<DiskInfo>& diskInfos) {
+	char logicalDrives[MAX_PATH] = {};
+	const DWORD length = GetLogicalDriveStringsA(MAX_PATH, logicalDrives);
+	if (length == 0 || length >= MAX_PATH) {
+		return FUNC_RET_NOT_AVAIL;
 	}
 
-	return return_value;
+	std::set<DWORD> seenDisks;
+	for (const char* drive = logicalDrives; *drive; drive += std::strlen(drive) + 1) {
+		if (GetDriveTypeA(drive) != DRIVE_FIXED) {
+			continue;
+		}
+		DWORD diskNumber = 0;
+		const bool diskMapped = getPhysicalDiskNumber(drive, diskNumber);
+		if (diskMapped && seenDisks.count(diskNumber) != 0) {
+			for (auto& diskInfo : diskInfos) {
+				if (diskInfo.disk_phys_id_initialized && diskInfo.id == static_cast<int>(diskNumber) &&
+					drive[0] == 'C') {
+					diskInfo.preferred = true;
+				}
+			}
+			continue;
+		}
+		std::string serial;
+		const bool physicalSerialAvailable = diskMapped && getPhysicalDiskSerial(diskNumber, serial);
+		DiskInfo diskInfo = {};
+		diskInfo.id = diskMapped ? static_cast<int>(diskNumber) : -1;
+		license::mstrlcpy(diskInfo.device, drive, sizeof(diskInfo.device));
+		if (physicalSerialAvailable) {
+			seenDisks.insert(diskNumber);
+			diskInfo.disk_phys_id = serial;
+			diskInfo.disk_phys_id_initialized = true;
+		} else {
+			LOG_WARN("Cannot read physical disk serial for %s; falling back to volume serial", drive);
+			if (!getVolumeSerial(drive, serial)) {
+				LOG_WARN("Cannot read volume serial for %s", drive);
+				continue;
+			}
+			diskInfo.disk_uuid = serial;
+			diskInfo.uuid_initialized = true;
+		}
+		diskInfo.preferred = (drive[0] == 'C');
+		diskInfos.push_back(diskInfo);
+	}
+	return diskInfos.empty() ? FUNC_RET_NOT_AVAIL : FUNC_RET_OK;
 }
 
 FUNCTION_RETURN getModuleName(char buffer[MAX_PATH]) {

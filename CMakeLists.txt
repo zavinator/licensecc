@@ -219,7 +219,12 @@ endif()
 #boost is required only for tests and inspector
 #SET (Boost_USE_STATIC_RUNTIME ${STATIC_RUNTIME}) doesn't work well in Linux... 
 SET( Boost_USE_STATIC_LIBS ON )
-find_package(Boost COMPONENTS date_time filesystem program_options unit_test_framework OPTIONAL_COMPONENTS system)
+include(CTest)
+set(licenseccBoostComponents date_time filesystem program_options)
+if(BUILD_TESTING)
+    list(APPEND licenseccBoostComponents unit_test_framework)
+endif()
+find_package(Boost COMPONENTS ${licenseccBoostComponents} OPTIONAL_COMPONENTS system)
 
 #if boost is found enable tests and inspector
 IF(Boost_FOUND)
@@ -231,7 +236,6 @@ IF(Boost_FOUND)
 	add_definitions(-DBOOST_LIB_DIAGNOSTIC) #Check it is really disabled
 	include_directories(${Boost_INCLUDE_DIRS}) 
 	
-	INCLUDE(CTest)
 	IF(BUILD_TESTING)
 		SET(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
 		MARK_AS_ADVANCED(BUILDNAME)

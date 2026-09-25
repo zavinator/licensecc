@@ -32,9 +32,12 @@
 
 // License retrieval configuration
 #ifndef FIND_LICENSE_NEAR_MODULE
-#define FIND_LICENSE_NEAR_MODULE true
+#define FIND_LICENSE_NEAR_MODULE false
 #endif
 #define FIND_LICENSE_WITH_ENV_VAR false
+
+// Require the signed client identifier for the disk selected by STRATEGY_DISK.
+#define LCC_REQUIRED_HW_STRATEGY STRATEGY_DISK
 
 /**
  * License file name extension
@@ -161,7 +164,7 @@ enum LCC_API_HW_IDENTIFICATION_STRATEGY {
  * identifier will be (HW_IDENTIFIER_PROPRIETARY_DATA + 1)*5/3 - 1
  * (-1 because there is no "-" in the end) bytes long.
  */
-#define HW_IDENTIFIER_PROPRIETARY_DATA 8
+#define HW_IDENTIFIER_PROPRIETARY_DATA 11
 
 /**
  * If == 0 do not add default limits to the verifier.
