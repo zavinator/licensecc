@@ -20,7 +20,6 @@
 
 #include <public_key.h>
 #include "../../base/logger.h"
-#include "../../base/base64.h"
 #include "../signature_verifier.hpp"
 #include <vector>
 #include <cstdint>
@@ -225,9 +224,26 @@ static FUNCTION_RETURN verifyHash(const PBYTE pbHash, const DWORD hashDataLenght
 	PBYTE pbSignature = nullptr;
 	BCRYPT_ALG_HANDLE hSignAlg = nullptr;
 
-	vector<uint8_t> signatureBlob = unbase64(signatureBuffer);
-	DWORD dwSigLen = (DWORD)signatureBlob.size();
-	BYTE* sigBlob = &signatureBlob[0];
+    // Reject malformed signatures without entering the unchecked legacy Base64 decoder.
+    if (signatureBuffer.empty() || signatureBuffer.size() > MAXDWORD)
+    {
+        return FUNC_RET_ERROR;
+    }
+    constexpr DWORD DECODE_FLAGS = CRYPT_STRING_BASE64 | CRYPT_STRING_STRICT;
+    const DWORD encodedLength = static_cast<DWORD>(signatureBuffer.size());
+    DWORD dwSigLen = 0;
+    if (!CryptStringToBinaryA(signatureBuffer.c_str(), encodedLength, DECODE_FLAGS,
+        nullptr, &dwSigLen, nullptr, nullptr) || dwSigLen == 0)
+    {
+        return FUNC_RET_ERROR;
+    }
+    vector<BYTE> signatureBlob(dwSigLen);
+    if (!CryptStringToBinaryA(signatureBuffer.c_str(), encodedLength, DECODE_FLAGS,
+        signatureBlob.data(), &dwSigLen, nullptr, nullptr))
+    {
+        return FUNC_RET_ERROR;
+    }
+    BYTE* sigBlob = signatureBlob.data();
 
 	if (NT_SUCCESS(status = BCryptOpenAlgorithmProvider(&hSignAlg, BCRYPT_RSA_ALGORITHM, NULL, 0))) {
 		if ((result = readPublicKey(hSignAlg, &phKey)) == FUNC_RET_OK) {
