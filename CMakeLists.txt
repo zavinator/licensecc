@@ -23,16 +23,12 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 ## LCC_PROJECTS_BASE_DIR       Base folder where the projects are stored. Only needed if you
 ##                             generated a project with `lccgen` in a non default location
 ##                             (not in `<<CMAKE_SOURCE_DIR>>/projects/<<PROJECT_NAME>>`).
-## LCC_LOCATION                Hint for locating the lccgen executable, in case you
-##                             downloaded it separately instead of building it from the
-##                             extern/license-generator submodule.
 
-SET(CMAKE_DISABLE_SOURCE_CHANGES OFF) #keys are generated in the source tree by default
 SET(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 IF(NOT LCC_PROJECT_NAME)
 	message(STATUS "You should define a variable LCC_PROJECT_NAME containing the name of the software you want to add a license to."
-		"A mock project named DEFAULT has been added for you.")
+		"Using the existing project named DEFAULT.")
 	set(LCC_PROJECT_NAME "DEFAULT" CACHE STRING "Project name (name of the software for which you want to issue a license)") 
 ENDIF(NOT LCC_PROJECT_NAME)
 
@@ -172,22 +168,13 @@ else(UNIX) #windows and linux crosscompiling for windows target
 	set(pkg_config_dest "cmake/${PROJECT_NAME}")
 endif(UNIX)
 
-#initialize project
-#load the current project from files or find it from environment variables or create a default one
+# Use the existing project headers; building the verifier does not require lccgen or the private key.
 set(LCC_INCLUDE_DIR "${LCC_PROJECTS_BASE_DIR}/${LCC_PROJECT_NAME}/include/${PROJECT_NAME}/${LCC_PROJECT_NAME}" )
 set(LCC_PROJECT_PUBLIC_KEY "${LCC_INCLUDE_DIR}/public_key.h" )
-set(LCC_PROJECT_PRIVATE_KEY "${LCC_PROJECTS_BASE_DIR}/${LCC_PROJECT_NAME}/private_key.rsa" )
-
-MESSAGE(STATUS "----------  LCCGEN BEGIN ------------------")
-#find lccgen executable or build it. (required by tests ). 
-find_package(lccgen REQUIRED) 
-MESSAGE(STATUS "----------  LCCGEN END   ------------------")
-
-add_custom_target(project_initialize
-  COMMAND license_generator::lccgen project initialize -t "${PROJECT_SOURCE_DIR}/src/templates" -n "${LCC_PROJECT_NAME}" -p "${LCC_PROJECTS_BASE_DIR}"
-  COMMENT "generating ${LCC_PROJECT_PUBLIC_KEY} and ${LCC_PROJECT_PRIVATE_KEY} if they don't already exist"
-  USES_TERMINAL
-)
+set(LCC_PROJECT_PROPERTIES "${LCC_INCLUDE_DIR}/licensecc_properties.h" )
+if(NOT EXISTS "${LCC_PROJECT_PUBLIC_KEY}" OR NOT EXISTS "${LCC_PROJECT_PROPERTIES}")
+    message(FATAL_ERROR "Project ${LCC_PROJECT_NAME} needs public_key.h and licensecc_properties.h in ${LCC_INCLUDE_DIR}. Initialize it separately before building LicenseCC.")
+endif()
 
 include_directories( ${LCC_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
@@ -216,35 +203,25 @@ if(WIN32 AND "x${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" STREQUAL "x")
     message(STATUS "Compiler architecture: ${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
 endif()
 
-#boost is required only for tests and inspector
-#SET (Boost_USE_STATIC_RUNTIME ${STATIC_RUNTIME}) doesn't work well in Linux... 
-SET( Boost_USE_STATIC_LIBS ON )
+# Boost is needed only when tests or the optional inspector are requested.
+option(BUILD_TESTING "Build LicenseCC tests" OFF)
+option(LCC_BUILD_INSPECTOR "Build the Boost-based hardware inspector" OFF)
 include(CTest)
-set(licenseccBoostComponents date_time filesystem program_options)
-if(BUILD_TESTING)
-    list(APPEND licenseccBoostComponents unit_test_framework)
+if(BUILD_TESTING OR LCC_BUILD_INSPECTOR)
+    set(licenseccBoostComponents date_time filesystem program_options)
+    if(BUILD_TESTING)
+        list(APPEND licenseccBoostComponents unit_test_framework)
+    endif()
+    find_package(Boost REQUIRED COMPONENTS ${licenseccBoostComponents} OPTIONAL_COMPONENTS system)
+    add_definitions(-DBOOST_ALL_NO_LIB)
+    include_directories(${Boost_INCLUDE_DIRS})
+    if(BUILD_TESTING)
+        add_subdirectory(test)
+    endif()
+    if(LCC_BUILD_INSPECTOR)
+        add_subdirectory("src/inspector")
+    endif()
 endif()
-find_package(Boost COMPONENTS ${licenseccBoostComponents} OPTIONAL_COMPONENTS system)
-
-#if boost is found enable tests and inspector
-IF(Boost_FOUND)
-	message( STATUS "Boost libs                : " ${Boost_LIBRARIES})
-	message( STATUS "Boost dirs                : " ${Boost_LIBRARY_DIRS})	#set(MEMORYCHECK_COMMAND_OPTIONS "--error-exitcode=1") #already set
-	#set below in case of dynamic linking in debug (cmake 3.15?).
-	#set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS $<$<CONFIG:Debug>:BOOST_TEST_DYN_LINK>)
-	add_definitions(-DBOOST_ALL_NO_LIB) #Disable Boost Microsoft magic, all dependencies are handled by cmake
-	add_definitions(-DBOOST_LIB_DIAGNOSTIC) #Check it is really disabled
-	include_directories(${Boost_INCLUDE_DIRS}) 
-	
-	IF(BUILD_TESTING)
-		SET(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
-		MARK_AS_ADVANCED(BUILDNAME)
-		add_subdirectory(test)
-	ENDIF(BUILD_TESTING)
-	add_subdirectory("src/inspector")
-ELSE(Boost_FOUND)
-	message(WARNING "Boost not found, disabling tests and inspector")
-ENDIF(Boost_FOUND)
 
 #################################
 # Documentation
